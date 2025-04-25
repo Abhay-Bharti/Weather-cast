@@ -51,7 +51,6 @@ const WeatherDetails = () => {
                 setLoading(true);
                 let lat, lon;
 
-                // First, get coordinates either from params or by geocoding the city
                 if (city === 'current') {
                     lat = searchParams.get('lat');
                     lon = searchParams.get('lon');

@@ -107,9 +107,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Weather data provided by [Open-Meteo](https://open-meteo.com/)
 - Background images from [Unsplash](https://unsplash.com/)
 - Icons and design inspiration from various weather applications
-
-## 📧 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - email@example.com
-
-Project Link: [https://github.com/yourusername/weather-cast](https://github.com/yourusername/weather-cast)
