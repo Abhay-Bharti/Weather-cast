@@ -183,7 +183,7 @@ const WeatherDetails = () => {
                         <h1 className="text-2xl font-bold text-white">Weather Cast</h1>
                         <form onSubmit={handleSearch} className="flex items-center gap-4">
                             <input
-                                type="text"
+                                type="search"
                                 placeholder="search by city name"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
