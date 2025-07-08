@@ -1,18 +1,44 @@
-import { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const WeatherDetails = () => {
-    const [weather, setWeather] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isDay, setIsDay] = useState(true);
-    const { city } = useParams();
+interface WeatherData {
+    current: {
+        temperature_2m: number;
+        relative_humidity_2m: number;
+        apparent_temperature: number;
+        wind_speed_10m: number;
+        weather_code: number;
+    };
+    hourly: {
+        temperature_2m: number[];
+        weather_code: number[];
+        time: string[];
+    };
+    daily: {
+        weather_code: number[];
+        temperature_2m_max: number[];
+        temperature_2m_min: number[];
+        sunrise: string[];
+        sunset: string[];
+        time: string[];
+    };
+    aqi: number;
+    location: string;
+}
+
+const WeatherDetails = (): React.ReactElement => {
+    const [weather, setWeather] = useState<WeatherData | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [isDay, setIsDay] = useState<boolean>(true);
+    const { city } = useParams<{ city: string }>();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const checkIfDay = (sunrise, sunset) => {
+    const checkIfDay = (sunrise: string, sunset: string): boolean => {
         const now = new Date().getTime();
         const sunriseTime = new Date(sunrise).getTime();
         const sunsetTime = new Date(sunset).getTime();
@@ -20,7 +46,7 @@ const WeatherDetails = () => {
     };
 
     // Function to get background class based on weather
-    const getBackgroundClass = (weatherCode) => {
+    const getBackgroundClass = (weatherCode: number): string => {
         // Clear sky
         if (weatherCode === 0) {
             return isDay ? 'bg-clear-day' : 'bg-clear-night';
@@ -49,7 +75,7 @@ const WeatherDetails = () => {
         const fetchWeatherData = async () => {
             try {
                 setLoading(true);
-                let lat, lon;
+                let lat: string | number | null = null, lon: string | number | null = null;
 
                 if (city === 'current') {
                     lat = searchParams.get('lat');
@@ -76,12 +102,12 @@ const WeatherDetails = () => {
                     )
                 ]);
 
-                const weatherData = {
+                const weatherData: WeatherData = {
                     current: weatherResponse.data.current,
                     hourly: weatherResponse.data.hourly,
                     daily: weatherResponse.data.daily,
                     aqi: forecastResponse.data.current.us_aqi,
-                    location: city === 'current' ? 'Current Location' : city
+                    location: city === 'current' ? 'Current Location' : city || ''
                 };
 
                 setWeather(weatherData);
@@ -99,8 +125,8 @@ const WeatherDetails = () => {
     }, [city, searchParams]);
 
     // Weather code to description mapping
-    const getWeatherDescription = (code) => {
-        const weatherCodes = {
+    const getWeatherDescription = (code: number): string => {
+        const weatherCodes: Record<number, string> = {
             0: 'Sunny',
             1: 'Mainly clear',
             2: 'Partly cloudy',
@@ -122,8 +148,8 @@ const WeatherDetails = () => {
     };
 
     // Get weather icon based on code and is_day
-    const getWeatherIcon = (code) => {
-        const iconMap = {
+    const getWeatherIcon = (code: number): string => {
+        const iconMap: Record<number, string> = {
             0: '☀️',
             1: '🌤️',
             2: '⛅',
@@ -144,7 +170,7 @@ const WeatherDetails = () => {
         return iconMap[code] || '☀️';
     };
 
-    const handleSearch = (e) => {
+    const handleSearch = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (searchQuery.trim()) {
             navigate(`/weather/${searchQuery.trim()}`);
@@ -169,8 +195,13 @@ const WeatherDetails = () => {
         }
     };
 
-    if (loading) return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center h-screen text-white bg-black bg-opacity-40">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+        </div>
+    );
     if (error) return <div className="flex items-center justify-center h-screen text-white">{error}</div>;
+    if (!weather) return <></>;
 
     return (
         <>
@@ -180,13 +211,13 @@ const WeatherDetails = () => {
                 {/* Navbar */}
                 <div className="bg-black/20 backdrop-blur-md p-4 rounded-lg mb-4">
                     <div className="max-w-6xl mx-auto flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-white">Weather Cast</h1>
+                        <h1 className="text-2xl font-bold text-white cursor-pointer" onClick={() => navigate('/')}>Weather Cast</h1>
                         <form onSubmit={handleSearch} className="flex items-center gap-4">
                             <input
                                 type="search"
                                 placeholder="search by city name"
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                                 className="search-input"
                             />
                             <button

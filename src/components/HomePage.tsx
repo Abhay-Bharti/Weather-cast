@@ -1,19 +1,38 @@
-import { useState } from 'react';
+import * as React from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const HomePage = () => {
-    const [city, setCity] = useState('');
+const HomePage = (): React.ReactElement => {
+    const [city, setCity] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    const handleSearch = (e) => {
+    const handleSearch = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (city.trim()) {
+            setLoading(true);
             navigate(`/weather/${city}`);
+        }
+    };
+
+    const handleCurrentLocation = () => {
+        setLoading(true);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                navigate(`/weather/current?lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
+            }, () => setLoading(false));
+        } else {
+            setLoading(false);
         }
     };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4">
+            {loading && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+                </div>
+            )}
             <div className="w-full max-w-2xl bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-8">
                 <h1 className="text-4xl font-bold text-white text-center mb-8">Weather Cast</h1>
                 <form onSubmit={handleSearch} className="flex flex-col items-center gap-4">
@@ -22,7 +41,7 @@ const HomePage = () => {
                             type="text"
                             placeholder="Search by city name"
                             value={city}
-                            onChange={(e) => setCity(e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg bg-white/20 backdrop-blur-sm text-white placeholder-white/70 border border-white/30 focus:outline-none focus:border-white/50"
                         />
                         <button
@@ -47,14 +66,7 @@ const HomePage = () => {
                     <button
                         type="button"
                         className="flex items-center gap-2 text-white hover:text-white/80 btn-icon"
-                        onClick={() => {
-                            // Handle location access here
-                            if (navigator.geolocation) {
-                                navigator.geolocation.getCurrentPosition((position) => {
-                                    navigate(`/weather/current?lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
-                                });
-                            }
-                        }}
+                        onClick={handleCurrentLocation}
                     >
                         <svg
                             className="w-5 h-5"
